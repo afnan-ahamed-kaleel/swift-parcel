@@ -34,28 +34,34 @@
       </div>
     </header>
 
-    <main class="px-4 py-6 w-full max-w-7xl mx-auto print-full-width">
+    <main class="px-4 py-6 w-full max-w-7xl mx-auto no-print">
       
-      <!-- Responsive Stats Grid -->
-      <div class="grid grid-cols-3 gap-3 md:gap-6 mb-8 no-print">
+      <!-- Responsive Stats Grid (Filter Buttons) -->
+      <div class="grid grid-cols-4 gap-2 md:gap-4 mb-6 no-print">
         <!-- Stat Card 1 -->
-        <div class="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow border border-slate-100 flex flex-col items-center justify-center text-center relative overflow-hidden">
-          <div class="absolute -top-4 -right-4 w-12 h-12 md:w-20 md:h-20 bg-blue-50 rounded-full opacity-50"></div>
-          <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 relative z-10">Total Deliveries</p>
-          <p id="stat-total" class="text-2xl md:text-4xl font-extrabold text-blue-600 relative z-10">0</p>
-        </div>
+        <button onclick="setFilter('All')" id="filter-All" class="filter-btn opacity-100 scale-100 border-slate-200 shadow-md bg-white rounded-xl p-2 md:p-4 transition-all border-2 flex flex-col items-center justify-center text-center relative overflow-hidden text-left w-full active:scale-95">
+          <div class="absolute -top-4 -right-4 w-10 h-10 bg-blue-50 rounded-full opacity-50"></div>
+          <p class="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 relative z-10 leading-tight">All</p>
+          <p id="stat-total" class="text-lg md:text-2xl font-extrabold text-blue-600 relative z-10 leading-none">0</p>
+        </button>
         <!-- Stat Card 2 -->
-        <div class="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow border border-slate-100 flex flex-col items-center justify-center text-center relative overflow-hidden">
-          <div class="absolute -top-4 -right-4 w-12 h-12 md:w-20 md:h-20 bg-amber-50 rounded-full opacity-50"></div>
-          <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 relative z-10">Pending</p>
-          <p id="stat-pending" class="text-2xl md:text-4xl font-extrabold text-amber-500 relative z-10">0</p>
-        </div>
+        <button onclick="setFilter('Pending')" id="filter-Pending" class="filter-btn opacity-60 scale-95 border-transparent bg-white rounded-xl p-2 md:p-4 transition-all border-2 flex flex-col items-center justify-center text-center relative overflow-hidden text-left w-full active:scale-95">
+          <div class="absolute -top-4 -right-4 w-10 h-10 bg-amber-50 rounded-full opacity-50"></div>
+          <p class="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 relative z-10 leading-tight">Pending</p>
+          <p id="stat-pending" class="text-lg md:text-2xl font-extrabold text-amber-500 relative z-10 leading-none">0</p>
+        </button>
         <!-- Stat Card 3 -->
-        <div class="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow border border-slate-100 flex flex-col items-center justify-center text-center relative overflow-hidden">
-          <div class="absolute -top-4 -right-4 w-12 h-12 md:w-20 md:h-20 bg-emerald-50 rounded-full opacity-50"></div>
-          <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 relative z-10">Delivered</p>
-          <p id="stat-delivered" class="text-2xl md:text-4xl font-extrabold text-emerald-500 relative z-10">0</p>
-        </div>
+        <button onclick="setFilter('Delivered')" id="filter-Delivered" class="filter-btn opacity-60 scale-95 border-transparent bg-white rounded-xl p-2 md:p-4 transition-all border-2 flex flex-col items-center justify-center text-center relative overflow-hidden text-left w-full active:scale-95">
+          <div class="absolute -top-4 -right-4 w-10 h-10 bg-emerald-50 rounded-full opacity-50"></div>
+          <p class="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 relative z-10 leading-tight">Delivered</p>
+          <p id="stat-delivered" class="text-lg md:text-2xl font-extrabold text-emerald-500 relative z-10 leading-none">0</p>
+        </button>
+        <!-- Stat Card 4 -->
+        <button onclick="setFilter('Canceled')" id="filter-Canceled" class="filter-btn opacity-60 scale-95 border-transparent bg-white rounded-xl p-2 md:p-4 transition-all border-2 flex flex-col items-center justify-center text-center relative overflow-hidden text-left w-full active:scale-95">
+          <div class="absolute -top-4 -right-4 w-10 h-10 bg-rose-50 rounded-full opacity-50"></div>
+          <p class="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 relative z-10 leading-tight">Canceled</p>
+          <p id="stat-canceled" class="text-lg md:text-2xl font-extrabold text-rose-500 relative z-10 leading-none">0</p>
+        </button>
       </div>
 
       <!-- Packages Header -->
@@ -137,8 +143,8 @@
               <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             </div>
             <div>
-              <h2 class="text-lg md:text-xl font-extrabold text-slate-800 tracking-tight">Verify Extraction</h2>
-              <p class="hidden md:block text-xs font-semibold text-slate-500 mt-0.5">Please confirm AI extracted data before saving.</p>
+              <h2 id="modalTitle" class="text-lg md:text-xl font-extrabold text-slate-800 tracking-tight">Verify Extraction</h2>
+              <p class="hidden md:block text-xs font-semibold text-slate-500 mt-0.5">Review parcel data before saving.</p>
             </div>
           </div>
           <button id="closeModalBtn" class="text-slate-400 hover:text-slate-700 bg-slate-50 rounded-full p-2.5 hover:bg-slate-100 transition-colors">
@@ -177,7 +183,7 @@
           <button id="cancelModalBtn" class="flex-1 py-4 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl font-extrabold transition-colors">Cancel</button>
           <button id="saveDataBtn" class="flex-[2] py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-[0_10px_20px_rgba(79,70,229,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] font-extrabold shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all">
             <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-            Save Package to Database
+            <span id="saveBtnText">Save Package</span>
           </button>
         </div>
       </div>
@@ -193,6 +199,42 @@
         </div>
       </div>
       <p class="text-white font-extrabold text-2xl tracking-tight drop-shadow-lg" id="loadingText">Analyzing Content...</p>
+    </div>
+
+    <!-- Developer Debug Panel (Auto-catches errors) -->
+    <div id="devDebugPanel" class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t-4 border-red-500 text-red-400 font-mono text-xs md:text-sm z-[200] max-h-[50vh] overflow-y-auto hidden no-print shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+      <div class="flex justify-between items-center bg-slate-800 px-4 py-2.5 sticky top-0 shadow-md">
+        <span class="font-bold text-white flex items-center gap-2 tracking-wider">
+          <svg class="w-4 h-4 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          SYSTEM ERROR LOGGER
+        </span>
+        <button onclick="document.getElementById('devDebugPanel').classList.add('hidden'); document.getElementById('devDebugLogs').innerHTML=''" class="text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition-colors uppercase font-bold text-[10px]">Dismiss</button>
+      </div>
+      <div id="devDebugLogs" class="p-4 space-y-3 pb-8"></div>
+    </div>
+
+    <!-- Print Preview Modal -->
+    <div id="printModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm hidden flex-col z-[250] print:block print:bg-white print:static print:z-auto">
+      <div class="bg-white flex-1 w-full max-w-4xl mx-auto overflow-y-auto flex flex-col shadow-2xl print:shadow-none print:max-w-none">
+        <!-- Print Modal Header (Hidden on actual print) -->
+        <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center sticky top-0 bg-white z-10 no-print">
+          <div class="flex items-center gap-2">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            <h2 class="text-xl font-extrabold text-slate-800 tracking-tight">Print Manifest</h2>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="document.getElementById('printModal').classList.add('hidden'); document.getElementById('printModal').classList.remove('flex');" class="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition-colors">Close</button>
+            <button onclick="window.print()" class="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-extrabold shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2z"></path></svg> 
+              Print Now
+            </button>
+          </div>
+        </div>
+        <!-- Printable Content -->
+        <div class="p-6 md:p-8 bg-white print:p-0" id="printContent">
+          <!-- Populated by JS -->
+        </div>
+      </div>
     </div>
 
     <script type="module" src="./main.js"></script>

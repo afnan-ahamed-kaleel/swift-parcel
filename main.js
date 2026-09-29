@@ -1,6 +1,31 @@
 import './style.css'
 import { supabase } from './supabase.js'
 
+// --- DEVELOPER DEBUG & ERROR LOGGER ---
+// This code catches ALL errors across the app and prints them beautifully to the screen
+window.logAppError = function(source, err) {
+  console.error(`[${source}]`, err);
+  const debugPanel = document.getElementById('devDebugPanel');
+  const debugLogs = document.getElementById('devDebugLogs');
+  if (debugPanel && debugLogs) {
+    debugPanel.classList.remove('hidden');
+    const logItem = document.createElement('div');
+    logItem.className = 'bg-red-500/10 p-3 border-l-4 border-red-500 break-words rounded-r-lg';
+    let errMsg = typeof err === 'object' ? (err.stack || err.message || JSON.stringify(err)) : err;
+    logItem.innerHTML = `<span class="text-white font-bold bg-red-500/20 px-2 py-0.5 rounded mr-2">[${source}]</span> <span class="font-semibold text-slate-300">${new Date().toLocaleTimeString()}</span><br><div class="mt-2 text-red-300 leading-relaxed font-mono whitespace-pre-wrap">${errMsg}</div>`;
+    debugLogs.prepend(logItem);
+  }
+};
+
+window.addEventListener('error', (event) => {
+  window.logAppError('Runtime Error', `${event.message} at ${event.filename}:${event.lineno}`);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  window.logAppError('Unhandled Promise', event.reason);
+});
+// --------------------------------------
+
 // DOM Elements
 const packagesContainer = document.getElementById('packagesContainer');
 const desktopScanBtn = document.getElementById('desktopScanBtn');
@@ -28,6 +53,8 @@ const vSender = document.getElementById('v-sender');
 
 let currentPackages = [];
 let mediaStream = null;
+let currentFilter = 'All';
+let editingPackageId = null;
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 // Custom Toast Alert System
@@ -72,34 +99,39 @@ async function fetchPackages() {
 
 // Render Packages for Grid/Column Layout
 function renderPackages() {
-  if (currentPackages.length === 0) {
+  const filtered = currentFilter === 'All' ? currentPackages : currentPackages.filter(p => p.status === currentFilter);
+
+  if (filtered.length === 0) {
     packagesContainer.innerHTML = `
-      <div class="bg-white rounded-3xl p-12 shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center col-span-full min-h-[300px]">
+      <div class="bg-white rounded-[2rem] p-12 shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center col-span-full min-h-[300px]">
         <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-5">
           <svg class="w-10 h-10 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
         </div>
         <p class="font-extrabold text-2xl text-slate-800">No Parcels Yet</p>
-        <p class="text-base font-semibold text-slate-500 mt-2">Tap "Scan Label" to add your first delivery.</p>
+        <p class="text-base font-semibold text-slate-500 mt-2">No parcels match this filter.</p>
       </div>`;
     return;
   }
 
-  packagesContainer.innerHTML = currentPackages.map(pkg => `
-    <div class="bg-white rounded-[1.5rem] p-5 shadow-sm hover:shadow-md transition-shadow border border-slate-100 flex flex-col gap-4 relative overflow-hidden h-full">
+  packagesContainer.innerHTML = filtered.map((pkg, idx) => `
+    <div class="bg-white rounded-[1.25rem] p-4 shadow-sm hover:shadow-md transition-shadow border border-slate-100 flex flex-col gap-3 relative overflow-hidden h-full">
       <div class="absolute left-0 top-0 bottom-0 w-1.5 ${pkg.status === 'Delivered' ? 'bg-emerald-500' : pkg.status === 'Canceled' ? 'bg-rose-500' : 'bg-amber-500'}"></div>
-      <div class="flex justify-between items-start pl-2">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 border border-slate-200 text-slate-700 flex items-center justify-center font-extrabold text-xl shrink-0">
+      
+      <!-- Top Row: Avatar, Name, Address, Status -->
+      <div class="flex justify-between items-start pl-2 gap-2">
+        <div class="flex items-start gap-3 cursor-pointer group flex-1" onclick="openEditModal('${pkg.id}')">
+          <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 border border-slate-200 text-slate-700 flex items-center justify-center font-extrabold text-lg shrink-0 group-hover:scale-105 transition-transform">
             ${pkg.client_name.charAt(0).toUpperCase()}
+            <div class="absolute -top-2 -left-2 bg-slate-800 text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm border-2 border-white z-10">${idx + 1}</div>
           </div>
-          <div>
-            <h3 class="font-extrabold text-slate-800 text-base leading-tight pr-2">${pkg.client_name}</h3>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 max-w-[140px] truncate">From: ${pkg.sender_address || 'Unknown'}</p>
+          <div class="flex flex-col">
+            <h3 class="font-extrabold text-slate-800 text-[15px] leading-tight group-hover:text-blue-600 transition-colors">${pkg.client_name}</h3>
+            <p class="text-[11px] font-bold text-slate-500 leading-tight mt-1 line-clamp-2">${pkg.delivery_address || 'No Address Provided'}</p>
           </div>
         </div>
         <select 
           onchange="updateStatus('${pkg.id}', this.value)" 
-          class="text-xs font-extrabold rounded-xl px-3 py-1.5 outline-none shadow-sm appearance-none text-center cursor-pointer transition-colors
+          class="text-[11px] font-extrabold rounded-lg px-2 py-1 outline-none shadow-sm appearance-none text-center cursor-pointer transition-colors shrink-0
             ${pkg.status === 'Delivered' ? 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 
               pkg.status === 'Canceled' ? 'bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100' : 
               'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'}"
@@ -109,20 +141,31 @@ function renderPackages() {
           <option value="Canceled" ${pkg.status === 'Canceled' ? 'selected' : ''}>❌ Canceled</option>
         </select>
       </div>
-      <div class="bg-slate-50/80 rounded-2xl p-4 border border-slate-100 ml-2 flex-1">
-        <div class="flex items-start gap-2.5">
-          <svg class="w-4 h-4 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-          <p class="text-[13px] font-bold text-slate-700 leading-snug">${pkg.delivery_address}</p>
-        </div>
-      </div>
-      <div class="flex flex-col gap-3 pl-2 mt-auto">
-        ${(pkg.primary_phone || pkg.secondary_phone) ? `
-          <div class="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
-            ${pkg.primary_phone ? `<a href="tel:${pkg.primary_phone}" class="flex-1 min-w-[110px] flex items-center justify-center gap-1.5 bg-blue-50 text-blue-600 border border-blue-100 px-3 py-2.5 rounded-xl text-xs font-extrabold hover:bg-blue-100 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg> Call</a>` : ''}
-            ${pkg.secondary_phone ? `<a href="tel:${pkg.secondary_phone}" class="flex-1 min-w-[110px] flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 border border-slate-200 px-3 py-2.5 rounded-xl text-xs font-extrabold hover:bg-slate-100 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg> Alt</a>` : ''}
+
+      <!-- Phone Numbers & Note -->
+      <div class="flex flex-col gap-2 pl-2 mt-1">
+        ${pkg.primary_phone || pkg.secondary_phone ? `
+          <div class="flex flex-col gap-1.5">
+            ${pkg.primary_phone ? `
+              <div class="flex items-center gap-2">
+                <input type="tel" value="${pkg.primary_phone}" onblur="updatePhone('${pkg.id}', 'primary_phone', this.value)" class="flex-1 text-[13px] font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-blue-400 focus:bg-white transition-colors" placeholder="Primary phone..." />
+                <a href="tel:${pkg.primary_phone}" class="bg-blue-100 text-blue-600 p-1.5 rounded-lg hover:bg-blue-200 transition-colors shrink-0" title="Call Primary">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                </a>
+              </div>
+            ` : ''}
+            ${pkg.secondary_phone ? `
+              <div class="flex items-center gap-2">
+                <input type="tel" value="${pkg.secondary_phone}" onblur="updatePhone('${pkg.id}', 'secondary_phone', this.value)" class="flex-1 text-[13px] font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-blue-400 focus:bg-white transition-colors" placeholder="Secondary phone..." />
+                <a href="tel:${pkg.secondary_phone}" class="bg-slate-100 text-slate-600 p-1.5 rounded-lg hover:bg-slate-200 transition-colors shrink-0" title="Call Secondary">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                </a>
+              </div>
+            ` : ''}
           </div>
-        ` : ''}
-        <input type="text" value="${pkg.note || ''}" placeholder="Add courier note..." onblur="updateNote('${pkg.id}', this.value)" class="w-full text-[13px] bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-bold text-slate-700 hover:bg-white" />
+        ` : `<div class="text-[11px] font-bold text-slate-400 italic">No phone numbers</div>`}
+        
+        <input type="text" value="${pkg.note || ''}" placeholder="Add courier note..." onblur="updateNote('${pkg.id}', this.value)" class="w-full text-[12px] bg-slate-50/50 border border-slate-100 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:bg-white transition-all font-semibold text-slate-700 mt-1" />
       </div>
     </div>
   `).join('');
@@ -132,7 +175,40 @@ function updateStats() {
   document.getElementById('stat-total').textContent = currentPackages.length;
   document.getElementById('stat-pending').textContent = currentPackages.filter(p => p.status === 'Pending').length;
   document.getElementById('stat-delivered').textContent = currentPackages.filter(p => p.status === 'Delivered').length;
+  document.getElementById('stat-canceled').textContent = currentPackages.filter(p => p.status === 'Canceled').length;
 }
+
+window.setFilter = (filter) => {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    if (btn.id === `filter-${filter}`) {
+      btn.classList.remove('opacity-60', 'scale-95', 'border-transparent');
+      btn.classList.add('opacity-100', 'scale-100', 'border-slate-200', 'shadow-md');
+    } else {
+      btn.classList.add('opacity-60', 'scale-95', 'border-transparent');
+      btn.classList.remove('opacity-100', 'scale-100', 'border-slate-200', 'shadow-md');
+    }
+  });
+  renderPackages();
+};
+
+window.openEditModal = (id) => {
+  const pkg = currentPackages.find(p => p.id === id);
+  if (!pkg) return;
+  editingPackageId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Parcel Details';
+  document.getElementById('saveBtnText').textContent = 'Update Changes';
+  populateModal(pkg);
+  openModal();
+};
+
+window.updatePhone = async (id, field, value) => {
+  const { error } = await supabase.from('packages').update({ [field]: value }).eq('id', id);
+  if (!error) {
+    const pkg = currentPackages.find(p => p.id === id);
+    if (pkg) pkg[field] = value;
+  }
+};
 
 window.updateStatus = async (id, newStatus) => {
   const { error } = await supabase.from('packages').update({ status: newStatus }).eq('id', id);
@@ -214,6 +290,59 @@ captureBtn.addEventListener('click', () => {
 desktopScanBtn.addEventListener('click', startCamera);
 mobileScanBtn.addEventListener('click', startCamera);
 
+printBtn.addEventListener('click', () => {
+  const printModal = document.getElementById('printModal');
+  const printContent = document.getElementById('printContent');
+  
+  const listToPrint = currentFilter === 'All' ? currentPackages : currentPackages.filter(p => p.status === currentFilter);
+  
+  let html = `
+    <div class="mb-6 border-b-2 border-slate-800 pb-4">
+      <h1 class="text-2xl font-extrabold text-slate-900">SwiftParcel Delivery Manifest</h1>
+      <p class="text-sm font-bold text-slate-500 mt-1">Filter: <span class="text-slate-800">${currentFilter}</span> &bull; Total Parcels: <span class="text-slate-800">${listToPrint.length}</span> &bull; Date: <span class="text-slate-800">${new Date().toLocaleDateString()}</span></p>
+    </div>
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-100 border-b-2 border-slate-300">
+          <th class="py-2 px-3 text-xs font-bold text-slate-700 w-10">#</th>
+          <th class="py-2 px-3 text-xs font-bold text-slate-700">Client Details</th>
+          <th class="py-2 px-3 text-xs font-bold text-slate-700">Delivery Address</th>
+          <th class="py-2 px-3 text-xs font-bold text-slate-700">Contact Phones</th>
+          <th class="py-2 px-3 text-xs font-bold text-slate-700">Status & Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${listToPrint.length === 0 ? `<tr><td colspan="5" class="py-4 text-center font-bold text-slate-400">No parcels to print.</td></tr>` : ''}
+        ${listToPrint.map((pkg, i) => `
+          <tr class="border-b border-slate-200">
+            <td class="py-3 px-3 text-sm font-bold text-slate-500 align-top">${i + 1}</td>
+            <td class="py-3 px-3 align-top">
+              <p class="text-sm font-extrabold text-slate-800">${pkg.client_name}</p>
+              <p class="text-[10px] text-slate-500 font-bold uppercase mt-1">From: ${pkg.sender_address || 'N/A'}</p>
+            </td>
+            <td class="py-3 px-3 text-xs font-semibold text-slate-700 max-w-[200px] align-top">${pkg.delivery_address || 'No Address'}</td>
+            <td class="py-3 px-3 text-xs font-bold text-slate-700 align-top">
+              ${pkg.primary_phone ? `<div>P: ${pkg.primary_phone}</div>` : ''}
+              ${pkg.secondary_phone ? `<div class="mt-1">S: ${pkg.secondary_phone}</div>` : ''}
+              ${!pkg.primary_phone && !pkg.secondary_phone ? '<span class="italic text-slate-400">None</span>' : ''}
+            </td>
+            <td class="py-3 px-3 align-top">
+              <span class="text-xs font-bold ${pkg.status === 'Pending' ? 'text-amber-600' : pkg.status === 'Delivered' ? 'text-emerald-600' : 'text-rose-600'}">
+                ${pkg.status.toUpperCase()}
+              </span>
+              ${pkg.note ? `<p class="text-[10px] text-slate-600 font-normal italic mt-1 leading-tight">${pkg.note}</p>` : ''}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  
+  printContent.innerHTML = html;
+  printModal.classList.remove('hidden');
+  printModal.classList.add('flex');
+});
+
 // File to base64 helper (for fallback)
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -226,6 +355,9 @@ function fileToBase64(file) {
 
 async function processSnapshot(base64Data, mimeType) {
   showLoading();
+  editingPackageId = null; // Reset edit state when scanning new
+  document.getElementById('modalTitle').textContent = 'Verify Extraction';
+  document.getElementById('saveBtnText').textContent = 'Save Package';
   
   try {
     const prompt = `
@@ -255,7 +387,12 @@ async function processSnapshot(base64Data, mimeType) {
       })
     });
 
-    if (!response.ok) throw new Error("API Error");
+    if (!response.ok) {
+      const errText = await response.text();
+      window.logAppError("Gemini API HTTP Error", `Status: ${response.status}\nResponse: ${errText}`);
+      console.error("Gemini API failed:", errText);
+      throw new Error("API Error");
+    }
 
     const data = await response.json();
     const textContent = data.candidates[0].content.parts[0].text;
@@ -266,10 +403,12 @@ async function processSnapshot(base64Data, mimeType) {
       hideLoading();
       openModal();
     } catch (e) {
+      window.logAppError("Gemini JSON Parse Error", `Failed to parse: ${textContent}`);
       hideLoading();
       showToast("AI could not read the text clearly. Please try again.", "error");
     }
   } catch (error) {
+    window.logAppError("Scanning Process Error", error);
     hideLoading();
     showToast("Network Error: Could not reach AI services.", "error");
   }
@@ -311,37 +450,51 @@ saveDataBtn.addEventListener('click', async () => {
     return;
   }
 
-  const newPackage = {
+  const pkgData = {
     client_name: vClient.value,
     delivery_address: vDelivery.value,
     primary_phone: vPhone1.value,
     secondary_phone: vPhone2.value,
-    sender_address: vSender.value,
-    status: 'Pending',
-    note: ''
+    sender_address: vSender.value
   };
 
   const originalText = saveDataBtn.innerHTML;
   saveDataBtn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Saving...`;
   saveDataBtn.disabled = true;
 
-  const { data, error } = await supabase.from('packages').insert([newPackage]).select();
+  let apiError = null;
+
+  if (editingPackageId) {
+    const { data, error } = await supabase.from('packages').update(pkgData).eq('id', editingPackageId).select();
+    apiError = error;
+    if (!error && data) {
+      const idx = currentPackages.findIndex(p => p.id === editingPackageId);
+      if (idx !== -1) currentPackages[idx] = data[0];
+    }
+  } else {
+    pkgData.status = 'Pending';
+    pkgData.note = '';
+    const { data, error } = await supabase.from('packages').insert([pkgData]).select();
+    apiError = error;
+    if (!error && data) {
+      currentPackages.unshift(data[0]);
+    }
+  }
 
   saveDataBtn.innerHTML = originalText;
   saveDataBtn.disabled = false;
 
-  if (error) {
-    showToast("Database Error: Failed to save.", "error");
+  if (apiError) {
+    window.logAppError("Supabase DB Error", apiError);
+    showToast(`Database Error: ${apiError.message || "Failed to save."}`, "error");
   } else {
-    currentPackages.unshift(data[0]);
     renderPackages();
     updateStats();
     closeModal();
-    showToast("Package saved successfully!", "success");
+    showToast(editingPackageId ? "Changes updated successfully!" : "Package saved successfully!", "success");
+    editingPackageId = null;
   }
 });
-
-printBtn.addEventListener('click', () => window.print());
 
 function showLoading() {
   loadingOverlay.classList.remove('hidden');
