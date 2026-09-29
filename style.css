@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --font-outfit: "Outfit", sans-serif;
+}
+
+/* Ensure bottom spacing on mobile for FAB and Modals */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+}
+
+/* Hide scrollbars for cleaner mobile UI */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* High-Tech Laser Animation */
+@keyframes laser-scan {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(16rem); opacity: 0; } /* 256px for mobile */
+}
+
+@media (min-width: 640px) {
+  @keyframes laser-scan {
+    0% { transform: translateY(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(20rem); opacity: 0; } /* 320px for desktop */
+  }
+}
+
+.animate-laser {
+  animation: laser-scan 2.5s infinite ease-in-out;
+}
+
+/* Hide elements during print */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background-color: white !important;
+    background-image: none !important;
+  }
+  .print-full-width {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+  .print-full-width * {
+    box-shadow: none !important;
+    border-color: #e2e8f0 !important;
+  }
+}
