@@ -1,5 +1,6 @@
-import './style.css'
-import { supabase } from './supabase.js'
+import '@dotlottie/player-component';
+import './style.css';
+import { supabase } from './supabase.js';
 
 // --- DEVELOPER DEBUG & ERROR LOGGER ---
 // This code catches ALL errors across the app and prints them beautifully to the screen
@@ -353,6 +354,13 @@ desktopScanBtn.addEventListener('click', startCamera);
 mobileScanBtn.addEventListener('click', startCamera);
 
 if (resetBtn) {
+  const refreshLottie = document.getElementById('refreshLottie');
+  if (refreshLottie) {
+    resetBtn.addEventListener('mouseenter', () => refreshLottie.play());
+    resetBtn.addEventListener('mouseleave', () => refreshLottie.stop());
+    resetBtn.addEventListener('click', () => refreshLottie.play());
+  }
+
   resetBtn.addEventListener('click', async () => {
     showConfirmModal("Reset Dashboard", "Are you sure you want to completely reset the parcel history? This will clear the dashboard for the next day.", async () => {
       // Not deleting by id > 0 because some ids might be UUIDs. We can use .neq('id', 'invalid-id-or-something') or .not('id', 'is', null)
@@ -632,3 +640,26 @@ function hideLoading() {
 }
 
 init();
+
+// --- Network Connectivity Logic ---
+const offlineOverlay = document.getElementById('offlineOverlay');
+
+window.addEventListener('offline', () => {
+  if (offlineOverlay) {
+    offlineOverlay.classList.remove('hidden');
+    offlineOverlay.classList.add('flex');
+    setTimeout(() => {
+      offlineOverlay.classList.remove('opacity-0');
+    }, 10);
+  }
+});
+
+window.addEventListener('online', () => {
+  if (offlineOverlay) {
+    offlineOverlay.classList.add('opacity-0');
+    setTimeout(() => {
+      offlineOverlay.classList.add('hidden');
+      offlineOverlay.classList.remove('flex');
+    }, 500); // Wait for transition
+  }
+});

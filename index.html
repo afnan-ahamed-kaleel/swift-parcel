@@ -9,13 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
   </head>
-  <body class="bg-slate-50 min-h-screen text-slate-800 font-outfit antialiased pb-28 md:pb-12 overflow-x-hidden selection:bg-blue-200">
+  <body class="bg-slate-50/80 min-h-screen text-slate-800 font-outfit antialiased pb-28 md:pb-12 overflow-x-hidden selection:bg-blue-200">
+    <!-- Animated Dynamic Background -->
+    <dotlottie-player src="/theme.lottie" autoplay loop class="fixed inset-0 w-full h-full object-cover -z-10 opacity-50 pointer-events-none"></dotlottie-player>
     
     <!-- Top App Bar (Responsive) -->
     <header class="bg-white/90 backdrop-blur-xl shadow-sm border-b border-slate-200 sticky top-0 z-30 px-5 py-3 md:py-4 flex items-center justify-between no-print transition-all">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-          <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+        <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-md shadow-blue-500/20 overflow-hidden">
+          <dotlottie-player src="/SP-logo.lottie" autoplay loop class="w-full h-full object-contain scale-125"></dotlottie-player>
         </div>
         <div>
           <h1 class="text-xl md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-700 tracking-tight leading-none">SwiftParcel</h1>
@@ -29,7 +31,7 @@
           Scan AI Label
         </button>
         <button id="resetBtn" class="p-2.5 md:px-4 md:py-2.5 flex items-center justify-center gap-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors active:scale-90" title="Reset All Data">
-          <svg class="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <dotlottie-player id="refreshLottie" src="/refresh.lottie" class="w-5 h-5 md:w-5 md:h-5"></dotlottie-player>
           <span class="hidden md:inline font-extrabold text-sm">Reset</span>
         </button>
         <button id="printBtn" class="p-2.5 text-slate-500 hover:text-blue-600 bg-slate-100 rounded-full transition-colors active:scale-90 active:bg-blue-50" title="Daily Report">
@@ -272,5 +274,12 @@
     </div>
 
     <script type="module" src="./main.js"></script>
+
+    <!-- Offline 404 Overlay -->
+    <div id="offlineOverlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl hidden flex-col items-center justify-center z-[500] opacity-0 transition-opacity duration-500">
+      <dotlottie-player src="/404.lottie" autoplay loop class="w-64 h-64 md:w-96 md:h-96"></dotlottie-player>
+      <h2 class="text-2xl md:text-4xl font-extrabold text-white mt-4 tracking-tight drop-shadow-lg">No Internet Connection</h2>
+      <p class="text-slate-400 font-bold mt-2 animate-pulse text-sm md:text-base">Reconnecting...</p>
+    </div>
   </body>
 </html>
