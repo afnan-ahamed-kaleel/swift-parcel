@@ -88,9 +88,15 @@ async function init() {
 }
 
 async function fetchPackages() {
+  if (!navigator.onLine) {
+    packagesContainer.innerHTML = `<div class="bg-slate-50 rounded-3xl p-8 border border-slate-200 flex flex-col items-center justify-center text-center col-span-full"><p class="font-extrabold text-lg text-slate-700">Offline Mode</p><p class="text-xs font-bold text-slate-500 mt-2">Waiting for connection...</p></div>`;
+    return;
+  }
+
   const { data, error } = await supabase.from('packages').select('*').order('created_at', { ascending: false });
 
   if (error) {
+    if (!navigator.onLine) return; // Prevent error from firing right after losing connection
     showToast('Database Error! Please make sure you ran schema.sql in Supabase.', 'error');
     packagesContainer.innerHTML = `<div class="bg-rose-50 rounded-3xl p-8 border border-rose-200 flex flex-col items-center justify-center text-center col-span-full"><p class="font-extrabold text-lg text-rose-700">Setup Required</p><p class="text-xs font-bold text-rose-500 mt-2">Run the schema.sql file in your Supabase SQL editor.</p></div>`;
     return;
@@ -354,13 +360,6 @@ desktopScanBtn.addEventListener('click', startCamera);
 mobileScanBtn.addEventListener('click', startCamera);
 
 if (resetBtn) {
-  const refreshLottie = document.getElementById('refreshLottie');
-  if (refreshLottie) {
-    resetBtn.addEventListener('mouseenter', () => refreshLottie.play());
-    resetBtn.addEventListener('mouseleave', () => refreshLottie.stop());
-    resetBtn.addEventListener('click', () => refreshLottie.play());
-  }
-
   resetBtn.addEventListener('click', async () => {
     showConfirmModal("Reset Dashboard", "Are you sure you want to completely reset the parcel history? This will clear the dashboard for the next day.", async () => {
       // Not deleting by id > 0 because some ids might be UUIDs. We can use .neq('id', 'invalid-id-or-something') or .not('id', 'is', null)
@@ -644,7 +643,7 @@ init();
 // --- Network Connectivity Logic ---
 const offlineOverlay = document.getElementById('offlineOverlay');
 
-window.addEventListener('offline', () => {
+function showOfflineOverlay() {
   if (offlineOverlay) {
     offlineOverlay.classList.remove('hidden');
     offlineOverlay.classList.add('flex');
@@ -652,14 +651,24 @@ window.addEventListener('offline', () => {
       offlineOverlay.classList.remove('opacity-0');
     }, 10);
   }
-});
+}
 
-window.addEventListener('online', () => {
+function hideOfflineOverlay() {
   if (offlineOverlay) {
     offlineOverlay.classList.add('opacity-0');
     setTimeout(() => {
       offlineOverlay.classList.add('hidden');
       offlineOverlay.classList.remove('flex');
+      // Refetch packages when connection is back
+      fetchPackages();
     }, 500); // Wait for transition
   }
-});
+}
+
+window.addEventListener('offline', showOfflineOverlay);
+window.addEventListener('online', hideOfflineOverlay);
+
+// Check on initial load
+if (!navigator.onLine) {
+  showOfflineOverlay();
+}
