@@ -30,6 +30,7 @@ window.addEventListener('unhandledrejection', (event) => {
 const packagesContainer = document.getElementById('packagesContainer');
 const desktopScanBtn = document.getElementById('desktopScanBtn');
 const mobileScanBtn = document.getElementById('mobileScanBtn');
+const resetBtn = document.getElementById('resetBtn');
 const printBtn = document.getElementById('printBtn');
 const verifyModal = document.getElementById('verifyModal');
 const verifyModalContent = document.getElementById('verifyModalContent');
@@ -129,17 +130,22 @@ function renderPackages() {
             <p class="text-[11px] font-bold text-slate-500 leading-tight mt-1 line-clamp-2">${pkg.delivery_address || 'No Address Provided'}</p>
           </div>
         </div>
-        <select 
-          onchange="updateStatus('${pkg.id}', this.value)" 
-          class="text-[11px] font-extrabold rounded-lg px-2 py-1 outline-none shadow-sm appearance-none text-center cursor-pointer transition-colors shrink-0
-            ${pkg.status === 'Delivered' ? 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 
-              pkg.status === 'Canceled' ? 'bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100' : 
-              'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'}"
-        >
-          <option value="Pending" ${pkg.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
-          <option value="Delivered" ${pkg.status === 'Delivered' ? 'selected' : ''}>✅ Delivered</option>
-          <option value="Canceled" ${pkg.status === 'Canceled' ? 'selected' : ''}>❌ Canceled</option>
-        </select>
+        <div class="flex flex-col items-end gap-1 shrink-0">
+          <select 
+            onchange="updateStatus('${pkg.id}', this.value)" 
+            class="text-[11px] font-extrabold rounded-lg px-2 py-1 outline-none shadow-sm appearance-none text-center cursor-pointer transition-colors w-full
+              ${pkg.status === 'Delivered' ? 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 
+                pkg.status === 'Canceled' ? 'bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100' : 
+                'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'}"
+          >
+            <option value="Pending" ${pkg.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+            <option value="Delivered" ${pkg.status === 'Delivered' ? 'selected' : ''}>✅ Delivered</option>
+            <option value="Canceled" ${pkg.status === 'Canceled' ? 'selected' : ''}>❌ Canceled</option>
+          </select>
+          <button onclick="deletePackage('${pkg.id}', event)" class="flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg transition-colors" title="Delete Parcel">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          </button>
+        </div>
       </div>
 
       <!-- Phone Numbers & Note -->
@@ -182,11 +188,11 @@ window.setFilter = (filter) => {
   currentFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(btn => {
     if (btn.id === `filter-${filter}`) {
-      btn.classList.remove('opacity-60', 'scale-95', 'border-transparent');
-      btn.classList.add('opacity-100', 'scale-100', 'border-slate-200', 'shadow-md');
+      btn.classList.remove('opacity-60', 'scale-95', 'bg-transparent', 'hover:bg-slate-50');
+      btn.classList.add('opacity-100', 'scale-100', 'bg-slate-100', 'shadow-sm');
     } else {
-      btn.classList.add('opacity-60', 'scale-95', 'border-transparent');
-      btn.classList.remove('opacity-100', 'scale-100', 'border-slate-200', 'shadow-md');
+      btn.classList.add('opacity-60', 'scale-95', 'bg-transparent', 'hover:bg-slate-50');
+      btn.classList.remove('opacity-100', 'scale-100', 'bg-slate-100', 'shadow-sm');
     }
   });
   renderPackages();
@@ -225,6 +231,61 @@ window.updateStatus = async (id, newStatus) => {
 
 window.updateNote = async (id, newNote) => {
   await supabase.from('packages').update({ note: newNote }).eq('id', id);
+};
+
+// Custom Confirm Modal Logic
+const confirmModal = document.getElementById('confirmModal');
+const confirmModalContent = document.getElementById('confirmModalContent');
+const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+const proceedConfirmBtn = document.getElementById('proceedConfirmBtn');
+
+let currentConfirmAction = null;
+
+function showConfirmModal(title, message, onConfirm) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMessage').textContent = message;
+  
+  currentConfirmAction = onConfirm;
+  
+  confirmModal.classList.remove('hidden');
+  confirmModal.classList.add('flex');
+  setTimeout(() => {
+    confirmModal.classList.remove('opacity-0');
+    confirmModalContent.classList.remove('scale-95');
+  }, 10);
+}
+
+function hideConfirmModal() {
+  confirmModal.classList.add('opacity-0');
+  confirmModalContent.classList.add('scale-95');
+  setTimeout(() => {
+    confirmModal.classList.add('hidden');
+    confirmModal.classList.remove('flex');
+    currentConfirmAction = null;
+  }, 300);
+}
+
+if (cancelConfirmBtn) cancelConfirmBtn.addEventListener('click', hideConfirmModal);
+if (proceedConfirmBtn) proceedConfirmBtn.addEventListener('click', () => {
+  if (currentConfirmAction) {
+    currentConfirmAction();
+  }
+  hideConfirmModal();
+});
+
+window.deletePackage = async (id, event) => {
+  event.stopPropagation(); // Prevent opening edit modal
+  showConfirmModal("Delete Parcel", "Are you sure you want to delete this parcel?", async () => {
+    const { error } = await supabase.from('packages').delete().eq('id', id);
+    if (error) {
+      showToast('Failed to delete parcel.', 'error');
+    } else {
+      currentPackages = currentPackages.filter(p => p.id !== id);
+      renderPackages();
+      updateStats();
+      showToast('Parcel deleted successfully.', 'success');
+    }
+  });
 };
 
 // --- Live Camera Scanner Logic ---
@@ -289,6 +350,24 @@ captureBtn.addEventListener('click', () => {
 // Bind Buttons
 desktopScanBtn.addEventListener('click', startCamera);
 mobileScanBtn.addEventListener('click', startCamera);
+
+if (resetBtn) {
+  resetBtn.addEventListener('click', async () => {
+    showConfirmModal("Reset Dashboard", "Are you sure you want to completely reset the parcel history? This will clear the dashboard for the next day.", async () => {
+      // Not deleting by id > 0 because some ids might be UUIDs. We can use .neq('id', 'invalid-id-or-something') or .not('id', 'is', null)
+      const { error } = await supabase.from('packages').delete().not('id', 'is', null);
+      if (error) {
+        showToast('Failed to reset data.', 'error');
+        console.error(error);
+      } else {
+        showToast('Dashboard reset successfully.', 'success');
+        currentPackages = [];
+        renderPackages();
+        updateStats();
+      }
+    });
+  });
+}
 
 printBtn.addEventListener('click', () => {
   const printModal = document.getElementById('printModal');
