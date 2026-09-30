@@ -32,6 +32,7 @@ const desktopScanBtn = document.getElementById('desktopScanBtn');
 const mobileScanBtn = document.getElementById('mobileScanBtn');
 const resetBtn = document.getElementById('resetBtn');
 const printBtn = document.getElementById('printBtn');
+const reportDatePicker = document.getElementById('reportDatePicker');
 const verifyModal = document.getElementById('verifyModal');
 const verifyModalContent = document.getElementById('verifyModalContent');
 const closeModalBtn = document.getElementById('closeModalBtn');
@@ -369,16 +370,41 @@ if (resetBtn) {
   });
 }
 
-printBtn.addEventListener('click', () => {
-  const printModal = document.getElementById('printModal');
+// Date format helper to YYYY-MM-DD
+function formatLocalDate(dateObj) {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Fetch and render report from Supabase based on selected Date
+async function loadReportForDate(dateStr) {
   const printContent = document.getElementById('printContent');
+  printContent.innerHTML = `<div class="py-12 flex justify-center"><svg class="w-8 h-8 text-blue-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></div>`;
   
-  const listToPrint = currentFilter === 'All' ? currentPackages : currentPackages.filter(p => p.status === currentFilter);
+  // Format the start and end of the chosen day in ISO format so Supabase can filter
+  const startOfDay = new Date(`${dateStr}T00:00:00.000Z`).toISOString();
+  const endOfDay = new Date(`${dateStr}T23:59:59.999Z`).toISOString();
+
+  const { data, error } = await supabase
+    .from('packages')
+    .select('*')
+    .gte('created_at', startOfDay)
+    .lte('created_at', endOfDay)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    printContent.innerHTML = `<p class="text-rose-500 font-bold p-4 text-center">Failed to load report data from database.</p>`;
+    return;
+  }
+
+  const listToPrint = data;
   
   let html = `
     <div class="mb-6 border-b-2 border-slate-800 pb-4">
-      <h1 class="text-2xl font-extrabold text-slate-900">SwiftParcel Delivery Manifest</h1>
-      <p class="text-sm font-bold text-slate-500 mt-1">Filter: <span class="text-slate-800">${currentFilter}</span> &bull; Total Parcels: <span class="text-slate-800">${listToPrint.length}</span> &bull; Date: <span class="text-slate-800">${new Date().toLocaleDateString()}</span></p>
+      <h1 class="text-2xl font-extrabold text-slate-900">SwiftParcel Daily Report</h1>
+      <p class="text-sm font-bold text-slate-500 mt-1">Date: <span class="text-slate-800">${dateStr}</span> &bull; Total Parcels: <span class="text-slate-800">${listToPrint.length}</span></p>
     </div>
     <table class="w-full text-left border-collapse">
       <thead>
@@ -391,7 +417,7 @@ printBtn.addEventListener('click', () => {
         </tr>
       </thead>
       <tbody>
-        ${listToPrint.length === 0 ? `<tr><td colspan="5" class="py-4 text-center font-bold text-slate-400">No parcels to print.</td></tr>` : ''}
+        ${listToPrint.length === 0 ? `<tr><td colspan="5" class="py-4 text-center font-bold text-slate-400">No parcels recorded for this date.</td></tr>` : ''}
         ${listToPrint.map((pkg, i) => `
           <tr class="border-b border-slate-200">
             <td class="py-3 px-3 text-sm font-bold text-slate-500 align-top">${i + 1}</td>
@@ -418,9 +444,30 @@ printBtn.addEventListener('click', () => {
   `;
   
   printContent.innerHTML = html;
+}
+
+// Open modal and initialize with today's date
+printBtn.addEventListener('click', () => {
+  const printModal = document.getElementById('printModal');
   printModal.classList.remove('hidden');
   printModal.classList.add('flex');
+  
+  const todayStr = formatLocalDate(new Date());
+  if (reportDatePicker) {
+    reportDatePicker.value = todayStr;
+  }
+  
+  loadReportForDate(todayStr);
 });
+
+// Watch for date changes in the date picker
+if (reportDatePicker) {
+  reportDatePicker.addEventListener('change', (e) => {
+    if (e.target.value) {
+      loadReportForDate(e.target.value);
+    }
+  });
+}
 
 // File to base64 helper (for fallback)
 function fileToBase64(file) {
