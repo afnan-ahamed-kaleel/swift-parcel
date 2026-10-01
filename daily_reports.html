@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover" />
+    <title>Daily Reports - SwiftParcel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    
+    <!-- PWA Setup -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <style>
+      /* Mobile Card Layout for Table */
+      @media (max-width: 767px) {
+        .responsive-table thead {
+          display: none;
+        }
+        
+        .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td {
+          display: block;
+          width: 100%;
+        }
+        
+        .responsive-table tr {
+          background: white;
+          border: 1px solid #e2e8f0;
+          border-radius: 1rem;
+          margin-bottom: 1rem;
+          padding: 1.25rem;
+          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        
+        .responsive-table td {
+          border: none;
+          padding: 0.5rem 0;
+          border-bottom: 1px solid #f8fafc;
+          position: relative;
+        }
+        
+        .responsive-table td:last-child {
+          border-bottom: none;
+          padding-bottom: 0;
+        }
+        
+        /* Add labels before the actual content using data attributes */
+        .responsive-table td::before {
+          content: attr(data-label);
+          font-size: 0.65rem;
+          text-transform: uppercase;
+          font-weight: 800;
+          color: #94a3b8;
+          display: block;
+          margin-bottom: 0.25rem;
+        }
+      }
+      
+      /* Print always as a table */
+      @media print {
+        @page { size: landscape; margin: 10mm; }
+        .responsive-table thead { display: table-header-group !important; }
+        .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td { display: table-cell !important; width: auto !important; }
+        .responsive-table tr { display: table-row !important; border: none !important; margin-bottom: 0 !important; padding: 0 !important; box-shadow: none !important; background: transparent !important; }
+        .responsive-table td { border-bottom: 1px solid #e2e8f0 !important; padding: 0.75rem 1rem !important; }
+        .responsive-table td::before { content: none !important; display: none !important; }
+        body { background: white !important; }
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 min-h-screen text-slate-800 font-outfit antialiased">
+    
+    <div class="flex-1 w-full max-w-6xl mx-auto flex flex-col print:max-w-none">
+      <!-- Header -->
+      <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-xl z-30 no-print shadow-sm">
+        
+        <div class="flex items-center gap-3">
+          <a href="/" class="p-2 md:p-2.5 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 rounded-full transition-all active:scale-90" title="Back to Dashboard">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          </a>
+          <div class="flex items-center gap-2">
+            <div class="hidden sm:flex w-8 h-8 rounded-lg bg-blue-50 text-blue-600 items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <h2 class="text-lg md:text-xl font-extrabold text-slate-800 tracking-tight">Daily Report</h2>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2 md:gap-3">
+          <input type="date" id="reportDatePicker" class="px-3 py-2 md:px-4 md:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs md:text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all cursor-pointer shadow-sm min-w-[120px]">
+          
+          <button onclick="window.print()" class="p-2 md:p-2.5 text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-lg hover:-translate-y-0.5 rounded-xl transition-all active:scale-95 active:translate-y-0 shadow-md shadow-blue-500/30" title="Print Report">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg> 
+          </button>
+        </div>
+      </div>
+      
+      <!-- Printable Content -->
+      <div class="p-4 md:p-8 bg-slate-50 print:bg-white print:p-0" id="printContent">
+        <!-- Populated by JS -->
+        <div class="flex items-center justify-center h-64 text-slate-400 font-bold">Loading report...</div>
+      </div>
+    </div>
+    
+    <script type="module" src="./daily_reports.js"></script>
+  </body>
+</html>

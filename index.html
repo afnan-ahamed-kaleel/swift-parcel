@@ -36,10 +36,10 @@
           <dotlottie-player id="refreshLottie" src="/refresh.lottie" class="w-5 h-5 md:w-5 md:h-5"></dotlottie-player>
           <span class="hidden md:inline font-extrabold text-sm">Reset</span>
         </button>
-        <button id="printBtn" class="p-2.5 text-slate-500 hover:text-blue-600 bg-slate-100 rounded-full transition-colors active:scale-90 active:bg-blue-50" title="Daily Report">
+        <a href="/daily_reports.html" id="printBtn" class="p-2.5 text-slate-500 hover:text-blue-600 bg-slate-100 rounded-full transition-colors active:scale-90 active:bg-blue-50" title="Daily Report">
           <!-- Document / Report Icon -->
           <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-        </button>
+        </a>
       </div>
     </header>
 
@@ -222,43 +222,7 @@
       <div id="devDebugLogs" class="p-4 space-y-3 pb-8"></div>
     </div>
 
-    <!-- Daily Report / Print Modal -->
-    <div id="printModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm hidden flex-col z-[250] print:block print:bg-white print:static print:z-auto">
-      <div class="bg-white flex-1 w-full max-w-4xl mx-auto overflow-y-auto flex flex-col shadow-2xl print:shadow-none print:max-w-none">
-        <!-- Print Modal Header (Hidden on actual print) -->
-        <div class="px-4 md:px-6 py-4 border-b border-slate-200 flex justify-between items-center sticky top-0 bg-white z-10 no-print">
-          
-          <!-- Left Side: Back/Close & Title -->
-          <div class="flex items-center gap-3">
-            <button onclick="document.getElementById('printModal').classList.add('hidden'); document.getElementById('printModal').classList.remove('flex');" class="p-2 md:p-2.5 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 rounded-full transition-all active:scale-90" title="Back">
-              <!-- Back Arrow Icon -->
-              <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            </button>
-            <div class="flex items-center gap-2">
-              <div class="hidden sm:flex w-8 h-8 rounded-lg bg-blue-50 text-blue-600 items-center justify-center">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-              </div>
-              <h2 class="text-lg md:text-xl font-extrabold text-slate-800 tracking-tight">Daily Report</h2>
-            </div>
-          </div>
-          
-          <!-- Right Side: Date Picker & Print Icon -->
-          <div class="flex items-center gap-2 md:gap-3">
-            <input type="date" id="reportDatePicker" class="px-3 py-2 md:px-4 md:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs md:text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all cursor-pointer shadow-sm min-w-[120px]">
-            
-            <button onclick="window.print()" class="p-2 md:p-2.5 text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-lg hover:-translate-y-0.5 rounded-xl transition-all active:scale-95 active:translate-y-0 shadow-md shadow-blue-500/30" title="Print Report">
-              <!-- Printer Icon (No text) -->
-              <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg> 
-            </button>
-          </div>
-          
-        </div>
-        <!-- Printable Content -->
-        <div class="p-6 md:p-8 bg-white print:p-0" id="printContent">
-          <!-- Populated by JS -->
-        </div>
-      </div>
-    </div>
+
 
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center z-[150] opacity-0 transition-opacity duration-300 no-print">
