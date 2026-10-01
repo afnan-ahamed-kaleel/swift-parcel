@@ -10,7 +10,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
-        daily_reports: path.resolve(__dirname, 'daily_reports.html')
+        daily_reports: path.resolve(__dirname, 'daily_reports.html'),
+        login: path.resolve(__dirname, 'login.html')
       }
     }
   }

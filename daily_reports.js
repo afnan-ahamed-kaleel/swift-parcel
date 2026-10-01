@@ -1,5 +1,18 @@
 import { supabase } from './supabase.js';
 
+let currentUser = null;
+
+// Auth Guard
+async function checkAuth() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    window.location.href = '/login.html';
+    return;
+  }
+  currentUser = session.user;
+}
+await checkAuth();
+
 const reportDatePicker = document.getElementById('reportDatePicker');
 const printContent = document.getElementById('printContent');
 
@@ -12,9 +25,9 @@ function formatLocalDate(dateObj) {
 
 async function loadReportForDate(dateStr) {
   if (!printContent) return;
-  
+
   printContent.innerHTML = `<div class="py-20 text-center"><p class="text-slate-400 font-bold animate-pulse">Fetching report data for ${dateStr}...</p></div>`;
-  
+
   try {
     const startOfDay = new Date(`${dateStr}T00:00:00.000Z`);
     const endOfDay = new Date(`${dateStr}T23:59:59.999Z`);
@@ -43,7 +56,7 @@ async function loadReportForDate(dateStr) {
 
     const html = `
       <div class="mb-6 md:mb-8 text-center md:text-left print:text-left">
-        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">SwiftParcel Daily Report</h1>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">Daily Report</h1>
         <p class="text-slate-500 font-bold mt-1">Date: <span class="text-blue-600">${dateStr}</span> &bull; Total Parcels: <span class="text-blue-600">${data.length}</span></p>
       </div>
 
@@ -137,7 +150,7 @@ async function loadReportForDate(dateStr) {
         </table>
       </div>
     `;
-    
+
     printContent.innerHTML = html;
   } catch (error) {
     console.error("Error fetching report:", error);

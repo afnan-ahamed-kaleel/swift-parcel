@@ -2,6 +2,19 @@ import '@dotlottie/player-component';
 import './style.css';
 import { supabase } from './supabase.js';
 
+let currentUser = null;
+
+// Auth Guard
+async function checkAuth() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    window.location.href = '/login.html';
+    return;
+  }
+  currentUser = session.user;
+}
+await checkAuth();
+
 // --- DEVELOPER DEBUG & ERROR LOGGER ---
 // This code catches ALL errors across the app and prints them beautifully to the screen
 window.logAppError = function(source, err) {
@@ -523,6 +536,7 @@ saveDataBtn.addEventListener('click', async () => {
   } else {
     pkgData.status = 'Pending';
     pkgData.note = '';
+    pkgData.user_id = currentUser.id; // Attach logged-in user
     const { data, error } = await supabase.from('packages').insert([pkgData]).select();
     apiError = error;
     if (!error && data) {
@@ -587,4 +601,17 @@ window.addEventListener('online', hideOfflineOverlay);
 // Check on initial load
 if (!navigator.onLine) {
   showOfflineOverlay();
+}
+
+// Logout Logic
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      window.logAppError("Logout Error", error);
+    } else {
+      window.location.href = '/login.html';
+    }
+  });
 }
