@@ -12,48 +12,69 @@
     <link rel="manifest" href="/manifest.json" />
     <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
   </head>
-  <body class="bg-slate-900 min-h-screen text-slate-800 font-outfit antialiased flex items-center justify-center relative overflow-hidden">
+  <body class="bg-slate-900 min-h-screen text-slate-800 font-outfit antialiased flex relative overflow-hidden">
     
-    <!-- Animated background elements -->
-    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob"></div>
-    <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob animation-delay-2000"></div>
-    <div class="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] bg-blue-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob animation-delay-4000"></div>
+    <!-- Mobile Background Animation (Hidden on Desktop) -->
+    <!-- Opacity is reduced so it acts as a dynamic wallpaper without distracting from the login form -->
+    <div class="absolute inset-0 z-0 md:hidden flex items-center justify-center opacity-25 pointer-events-none">
+       <dotlottie-player src="/theme.lottie" autoplay loop class="w-full h-full object-cover scale-150"></dotlottie-player>
+    </div>
 
-    <div class="w-full max-w-sm px-6 relative z-10">
-      <div class="bg-white/10 backdrop-blur-2xl border border-white/20 p-8 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+    <!-- Floating animated glowing blobs for extra glassmorphism effect -->
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob"></div>
+    <div class="absolute bottom-[-20%] left-[10%] w-[40%] h-[40%] bg-indigo-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-blob animation-delay-4000"></div>
+
+    <!-- Left Side: Login Form (Full width on mobile, half width on desktop) -->
+    <div class="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 z-10 min-h-screen relative">
+      <div class="w-full max-w-md bg-slate-900/40 md:bg-white/10 backdrop-blur-2xl border border-white/20 p-8 md:p-10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
         
         <div class="flex flex-col items-center mb-8">
-          <div class="w-16 h-16 bg-gradient-to-tr from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 overflow-hidden mb-4">
+          <div class="w-16 h-16 bg-gradient-to-tr from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 overflow-hidden mb-4 relative z-20">
             <dotlottie-player src="/SP-logo.lottie" autoplay loop class="w-full h-full object-contain scale-125"></dotlottie-player>
           </div>
-          <h1 class="text-3xl font-extrabold text-white tracking-tight">SwiftParcel</h1>
-          <p class="text-sm font-semibold text-blue-200 mt-1 uppercase tracking-widest">Courier Hub</p>
+          <h1 class="text-3xl font-extrabold text-white tracking-tight drop-shadow-md">SwiftParcel</h1>
+          <p class="text-sm font-semibold text-blue-200 mt-1 uppercase tracking-widest drop-shadow-sm">Courier Hub</p>
         </div>
 
-        <form id="loginForm" class="space-y-5">
+        <form id="loginForm" class="space-y-5 relative z-20">
           <div>
             <label class="block text-[11px] font-bold text-blue-200 uppercase tracking-widest mb-2">Username</label>
-            <input type="text" id="username" class="w-full px-4 py-3.5 bg-slate-900/50 border border-white/10 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none font-bold text-white shadow-inner transition-all placeholder-slate-500" placeholder="Enter username" required autocomplete="username">
+            <input type="text" id="username" class="w-full px-4 py-3.5 bg-slate-900/60 border border-white/10 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none font-bold text-white shadow-inner transition-all placeholder-slate-500 backdrop-blur-md" placeholder="Enter username" required autocomplete="username">
           </div>
           
           <div>
             <label class="block text-[11px] font-bold text-blue-200 uppercase tracking-widest mb-2">Password</label>
-            <input type="password" id="password" class="w-full px-4 py-3.5 bg-slate-900/50 border border-white/10 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none font-bold text-white shadow-inner transition-all placeholder-slate-500" placeholder="Enter password" required autocomplete="current-password">
+            <input type="password" id="password" class="w-full px-4 py-3.5 bg-slate-900/60 border border-white/10 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none font-bold text-white shadow-inner transition-all placeholder-slate-500 backdrop-blur-md" placeholder="Enter password" required autocomplete="current-password">
           </div>
 
-          <div id="errorMessage" class="hidden bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold p-3 rounded-lg flex items-start gap-2">
+          <div id="errorMessage" class="hidden bg-rose-500/20 backdrop-blur-md border border-rose-500/40 text-rose-300 text-xs font-bold p-3 rounded-lg flex items-start gap-2 shadow-lg">
             <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             <span id="errorText"></span>
           </div>
 
-          <button type="submit" id="submitBtn" class="w-full py-4 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] font-extrabold flex items-center justify-center gap-2 transition-all">
+          <button type="submit" id="submitBtn" class="w-full py-4 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-[0_0_20px_rgba(79,70,229,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] font-extrabold flex items-center justify-center gap-2 transition-all border border-blue-400/30">
             <span id="btnText">Secure Login</span>
             <svg id="btnSpinner" class="hidden w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
           </button>
         </form>
       </div>
+    </div>
+
+    <!-- Right Side: Theme Lottie Animation (Desktop Only) -->
+    <div class="hidden md:flex md:w-1/2 relative items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 border-l border-white/5 shadow-2xl z-10 overflow-hidden">
+      <!-- A glowing, pulsing backdrop positioned exactly behind the lottie -->
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="w-[500px] h-[500px] bg-blue-500/30 filter blur-[120px] rounded-full animate-pulse"></div>
+      </div>
       
-      <p class="text-center text-slate-500 text-xs font-semibold mt-8 uppercase tracking-widest">Secure & Encrypted Access</p>
+      <!-- The main theme animation -->
+      <dotlottie-player src="/theme.lottie" autoplay loop class="w-full max-w-xl h-auto object-contain relative z-20 drop-shadow-2xl hover:scale-105 transition-transform duration-700"></dotlottie-player>
+      
+      <!-- Decorative Marketing Text at the bottom -->
+      <div class="absolute bottom-16 left-0 right-0 text-center z-30 px-8">
+        <h2 class="text-3xl font-extrabold text-white tracking-tight drop-shadow-lg">Smart AI Logistics</h2>
+        <p class="text-blue-200 font-medium mt-3 max-w-sm mx-auto drop-shadow-md text-sm">Scan smart labels, track packages instantly, and manage your daily routes with zero friction.</p>
+      </div>
     </div>
 
     <script type="module" src="./login.js"></script>
