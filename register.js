@@ -1,7 +1,8 @@
 import { supabase } from './supabase.js';
 
-const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
 const usernameInput = document.getElementById('username');
+const contactInfoInput = document.getElementById('contactInfo');
 const passwordInput = document.getElementById('password');
 const errorMessage = document.getElementById('errorMessage');
 const errorText = document.getElementById('errorText');
@@ -29,51 +30,60 @@ function hideError() {
 
 function setLoading(isLoading) {
   if (isLoading) {
-    btnText.textContent = 'Authenticating...';
+    btnText.textContent = 'Registering...';
     btnSpinner.classList.remove('hidden');
     submitBtn.disabled = true;
     submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
   } else {
-    btnText.textContent = 'Secure Login';
+    btnText.textContent = 'Sign Up';
     btnSpinner.classList.add('hidden');
     submitBtn.disabled = false;
     submitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
   }
 }
 
-loginForm.addEventListener('submit', async (e) => {
+registerForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   hideError();
   setLoading(true);
 
   const username = usernameInput.value.trim();
+  const contactInfo = contactInfoInput.value.trim();
   const password = passwordInput.value;
 
-  if (!username || !password) {
-    showError("Please enter both username and password.");
+  if (!username || !password || !contactInfo) {
+    showError("Please fill out all fields.");
     setLoading(false);
     return;
   }
 
-  // Faking an email so Supabase auth works seamlessly with just a username
+  // Fake email for Supabase to strictly use username
   const email = `${username}@swiftparcel.com`;
 
   try {
-    let { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        data: {
+          real_contact: contactInfo
+        }
+      }
     });
 
     if (error) {
-      throw new Error("Invalid username or password");
+      if (error.message.toLowerCase().includes("user already registered")) {
+        throw new Error("Username is already taken.");
+      }
+      throw error;
     }
 
-    // Sign in successful
+    // Sign up successful, redirect to dashboard
     window.location.href = '/';
     
   } catch (err) {
     console.error("Auth Error:", err);
-    showError("Invalid username or password");
+    showError(err.message || "Registration failed. Please try again.");
     setLoading(false);
   }
 });
