@@ -57,6 +57,16 @@ registerForm.addEventListener('submit', async (e) => {
     return;
   }
 
+  // Validate contact info (10 digit number OR valid email)
+  const is10Digit = /^\d{10}$/.test(contactInfo);
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactInfo);
+  
+  if (!is10Digit && !isEmail) {
+    showError("Please enter a valid 10-digit mobile number or a valid email address.");
+    setLoading(false);
+    return;
+  }
+
   // Fake email for Supabase to strictly use username
   const email = `${username}@swiftparcel.com`;
 

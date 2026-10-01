@@ -12,7 +12,8 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html'),
         daily_reports: path.resolve(__dirname, 'daily_reports.html'),
         login: path.resolve(__dirname, 'login.html'),
-        register: path.resolve(__dirname, 'register.html')
+        register: path.resolve(__dirname, 'register.html'),
+        forgot_password: path.resolve(__dirname, 'forgot_password.html')
       }
     }
   }
