@@ -12,50 +12,7 @@
     <link rel="manifest" href="/manifest.json" />
 
     <style>
-      /* Mobile Card Layout for Table */
-      @media (max-width: 767px) {
-        .responsive-table thead {
-          display: none;
-        }
-        
-        .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td {
-          display: block;
-          width: 100%;
-        }
-        
-        .responsive-table tr {
-          background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 1rem;
-          margin-bottom: 1rem;
-          padding: 1.25rem;
-          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-        
-        .responsive-table td {
-          border: none;
-          padding: 0.5rem 0;
-          border-bottom: 1px solid #f8fafc;
-          position: relative;
-        }
-        
-        .responsive-table td:last-child {
-          border-bottom: none;
-          padding-bottom: 0;
-        }
-        
-        /* Add labels before the actual content using data attributes */
-        .responsive-table td::before {
-          content: attr(data-label);
-          font-size: 0.65rem;
-          text-transform: uppercase;
-          font-weight: 800;
-          color: #94a3b8;
-          display: block;
-          margin-bottom: 0.25rem;
-        }
-      }
-      
+
       /* Print always as a table */
       @media print {
         @page { size: landscape; margin: 10mm; }
