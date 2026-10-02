@@ -15,20 +15,11 @@ async function checkAuth() {
 }
 await checkAuth();
 
-// --- DEVELOPER DEBUG & ERROR LOGGER ---
-// This code catches ALL errors across the app and prints them beautifully to the screen
+// --- ERROR LOGGER ---
+// We now hide raw errors from regular users and only log to console
 window.logAppError = function(source, err) {
   console.error(`[${source}]`, err);
-  const debugPanel = document.getElementById('devDebugPanel');
-  const debugLogs = document.getElementById('devDebugLogs');
-  if (debugPanel && debugLogs) {
-    debugPanel.classList.remove('hidden');
-    const logItem = document.createElement('div');
-    logItem.className = 'bg-red-500/10 p-3 border-l-4 border-red-500 break-words rounded-r-lg';
-    let errMsg = typeof err === 'object' ? (err.stack || err.message || JSON.stringify(err)) : err;
-    logItem.innerHTML = `<span class="text-white font-bold bg-red-500/20 px-2 py-0.5 rounded mr-2">[${source}]</span> <span class="font-semibold text-slate-300">${new Date().toLocaleTimeString()}</span><br><div class="mt-2 text-red-300 leading-relaxed font-mono whitespace-pre-wrap">${errMsg}</div>`;
-    debugLogs.prepend(logItem);
-  }
+  // Do not show the debug panel in production
 };
 
 window.addEventListener('error', (event) => {
@@ -373,8 +364,30 @@ captureBtn.addEventListener('click', () => {
   processSnapshot(base64Data, 'image/jpeg');
 });
 
+// Desktop File Input for Scanning
+const desktopFileInput = document.getElementById('desktopFileInput');
+if (desktopFileInput) {
+  desktopFileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const b64 = await fileToBase64(file);
+    
+    // Set preview image in the desktop panel
+    const previewImg = document.getElementById('desktopPreviewImg');
+    if(previewImg) previewImg.src = URL.createObjectURL(file);
+    
+    processSnapshot(b64.split(',')[1], file.type);
+    
+    // Reset input so the same file can be selected again if needed
+    e.target.value = '';
+  });
+}
+
 // Bind Buttons
-desktopScanBtn.addEventListener('click', startCamera);
+// desktopScanBtn triggers the web camera from the top header
+if (desktopScanBtn) {
+  desktopScanBtn.addEventListener('click', startCamera);
+}
 mobileScanBtn.addEventListener('click', startCamera);
 
 if (resetBtn) {
@@ -485,22 +498,60 @@ function populateModal(data) {
   vSender.value = data.sender_address || '';
 }
 
+const isDesktop = () => window.innerWidth >= 1024;
+
+// Modal & Desktop Panel Logic
 function openModal() {
-  verifyModal.classList.remove('hidden');
-  verifyModal.classList.add('flex');
-  setTimeout(() => {
-    verifyModal.classList.remove('opacity-0');
-    verifyModalContent.classList.remove('translate-y-full', 'sm:scale-95');
-  }, 10);
+  if (isDesktop() && !editingPackageId) {
+    // If scanning on desktop, move the form into the right panel
+    const verifyForm = document.getElementById('verifyForm');
+    const buttonsContainer = document.getElementById('saveDataBtn').parentElement;
+    const desktopContainer = document.getElementById('desktopVerifyFormContainer');
+    
+    if(desktopContainer && verifyForm) {
+       // Move form and buttons into the right panel
+       desktopContainer.appendChild(verifyForm);
+       desktopContainer.appendChild(buttonsContainer);
+       
+       // Show analysis results
+       document.getElementById('desktopAnalysisResults')?.classList.remove('hidden');
+       document.getElementById('desktopAnalysisResults')?.classList.add('flex');
+    }
+  } else {
+    // Mobile OR Desktop Edit mode (which uses the modal overlay)
+    verifyModal.classList.remove('hidden');
+    verifyModal.classList.add('flex');
+    setTimeout(() => {
+      verifyModal.classList.remove('opacity-0');
+      verifyModalContent.classList.remove('translate-y-full', 'sm:scale-95');
+    }, 10);
+  }
 }
 
 function closeModal() {
-  verifyModal.classList.add('opacity-0');
-  verifyModalContent.classList.add('translate-y-full', 'sm:scale-95');
-  setTimeout(() => {
-    verifyModal.classList.add('hidden');
-    verifyModal.classList.remove('flex');
-  }, 300);
+  if (isDesktop() && !editingPackageId && document.getElementById('desktopAnalysisResults')?.classList.contains('flex')) {
+    // Reset desktop panel back to upload zone
+    document.getElementById('desktopAnalysisResults')?.classList.add('hidden');
+    document.getElementById('desktopAnalysisResults')?.classList.remove('flex');
+    document.getElementById('desktopUploadZone')?.classList.remove('hidden');
+    document.getElementById('desktopUploadZone')?.classList.add('flex');
+    
+    // Move form back to original modal structure
+    const verifyForm = document.getElementById('verifyForm');
+    const buttonsContainer = document.getElementById('saveDataBtn').parentElement;
+    const modalContent = document.getElementById('verifyModalContent');
+    const modalBody = modalContent.querySelector('.overflow-y-auto');
+    
+    if (verifyForm && modalBody) modalBody.appendChild(verifyForm);
+    if (buttonsContainer && modalContent) modalContent.appendChild(buttonsContainer);
+  } else {
+    verifyModal.classList.add('opacity-0');
+    verifyModalContent.classList.add('translate-y-full', 'sm:scale-95');
+    setTimeout(() => {
+      verifyModal.classList.add('hidden');
+      verifyModal.classList.remove('flex');
+    }, 300);
+  }
 }
 
 closeModalBtn.addEventListener('click', closeModal);
@@ -560,12 +611,27 @@ saveDataBtn.addEventListener('click', async () => {
 });
 
 function showLoading() {
-  loadingOverlay.classList.remove('hidden');
-  loadingOverlay.classList.add('flex');
+  if (isDesktop() && !editingPackageId) {
+    document.getElementById('desktopUploadZone')?.classList.add('hidden');
+    document.getElementById('desktopUploadZone')?.classList.remove('flex');
+    document.getElementById('desktopAnalysisResults')?.classList.add('hidden');
+    document.getElementById('desktopAnalysisResults')?.classList.remove('flex');
+    document.getElementById('desktopAiLoadingState')?.classList.remove('hidden');
+    document.getElementById('desktopAiLoadingState')?.classList.add('flex');
+  } else {
+    loadingOverlay.classList.remove('hidden');
+    loadingOverlay.classList.add('flex');
+  }
 }
+
 function hideLoading() {
-  loadingOverlay.classList.add('hidden');
-  loadingOverlay.classList.remove('flex');
+  if (isDesktop()) {
+    document.getElementById('desktopAiLoadingState')?.classList.add('hidden');
+    document.getElementById('desktopAiLoadingState')?.classList.remove('flex');
+  } else {
+    loadingOverlay.classList.add('hidden');
+    loadingOverlay.classList.remove('flex');
+  }
 }
 
 init();
