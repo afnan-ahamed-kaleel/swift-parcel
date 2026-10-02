@@ -7,4 +7,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error("Missing Supabase environment variables. Please check your .env.local file.");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    experimental: {
+      passkey: true
+    }
+  }
+});

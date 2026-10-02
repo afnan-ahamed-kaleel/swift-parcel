@@ -417,6 +417,41 @@ if (resetBtn) {
     });
   });
 }
+  
+const enableBiometricsBtn = document.getElementById('enableBiometricsBtn');
+if (enableBiometricsBtn) {
+  enableBiometricsBtn.addEventListener('click', async () => {
+    try {
+      const result = await supabase.auth.registerPasskey();
+      if (result.error) throw result.error;
+      
+      Swal.fire({
+        title: 'Biometrics Enabled!',
+        html: `
+          <div style="display: flex; justify-content: center; align-items: center;">
+            <dotlottie-player src="/success.lottie" background="transparent" speed="1" style="width: 150px; height: 150px;" autoplay></dotlottie-player>
+          </div>
+          <p>You can now use your fingerprint or FaceID to securely log into SwiftParcel.</p>
+        `,
+        confirmButtonText: 'Awesome',
+        confirmButtonColor: '#3b82f6',
+        customClass: {
+          popup: 'rounded-3xl',
+          confirmButton: 'rounded-xl font-bold px-6 py-2'
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Registration Failed',
+        text: err.message || 'Could not register biometric passkey. Check if your browser supports WebAuthn.',
+        confirmButtonColor: '#ef4444',
+        customClass: { popup: 'rounded-3xl' }
+      });
+    }
+  });
+}
 
 // File to base64 helper (for fallback)
 function fileToBase64(file) {
