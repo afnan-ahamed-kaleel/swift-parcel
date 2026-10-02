@@ -56,7 +56,7 @@ loginForm.addEventListener('submit', async (e) => {
   }
 
   // Faking an email so Supabase auth works seamlessly with just a username
-  const email = `${username}@swiftparcel.com`;
+  const email = `${username.toLowerCase()}@swiftparcel.com`;
 
   try {
     let { data, error } = await supabase.auth.signInWithPassword({
@@ -65,7 +65,7 @@ loginForm.addEventListener('submit', async (e) => {
     });
 
     if (error) {
-      throw new Error("Invalid username or password");
+      throw error;
     }
 
     // Sign in successful
@@ -73,7 +73,7 @@ loginForm.addEventListener('submit', async (e) => {
     
   } catch (err) {
     console.error("Auth Error:", err);
-    showError("Invalid username or password");
+    showError(err.message || "Invalid username or password");
     setLoading(false);
   }
 });

@@ -68,7 +68,7 @@ registerForm.addEventListener('submit', async (e) => {
   }
 
   // Fake email for Supabase to strictly use username
-  const email = `${username}@swiftparcel.com`;
+  const email = `${username.toLowerCase()}@swiftparcel.com`;
 
   try {
     const { data, error } = await supabase.auth.signUp({
