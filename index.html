@@ -109,12 +109,8 @@
         <!-- Scrollable Content -->
         <div class="scanner-panel__content pt-0">
           
-          <!-- Invisible spacer to perfectly match the 'Active Parcels' container offset -->
-          <!-- Left side offset: 186px. Right side offset: 93 (header) + 24 (mb) + 45 (spacer) + 24 (gap) = 186px -->
-          <div class="h-[45px]"></div>
-          
           <!-- Upload / Drag & Drop Zone -->
-          <div id="desktopUploadZone" class="upload-zone group">
+          <div id="desktopUploadZone" class="upload-zone group mt-[45px]">
             <input type="file" id="desktopFileInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
             <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -144,9 +140,9 @@
           </div>
 
           <!-- Analysis Results Area -->
-          <div id="desktopAnalysisResults" class="hidden flex-col gap-6">
+          <div id="desktopAnalysisResults" class="hidden flex-col gap-3 mt-1">
             <!-- Image Preview -->
-            <div class="image-preview-container group">
+            <div class="image-preview-container group h-32">
               <img id="desktopPreviewImg" class="w-full h-full object-cover" src="" alt="Scanned Label">
               <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 <span class="text-white text-xs font-bold uppercase tracking-widest bg-black/40 px-3 py-1.5 rounded-lg backdrop-blur-md">Scanned Image</span>
@@ -232,9 +228,9 @@
           </button>
         </div>
         
-        <div class="p-6 md:p-8 overflow-y-auto flex-1 bg-slate-50/50">
-          <form id="verifyForm" class="space-y-4 md:space-y-5">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+        <div class="p-5 md:p-6 overflow-y-auto flex-1 bg-slate-50/50">
+          <form id="verifyForm" class="space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div class="md:col-span-2 form-group">
                 <label class="form-label">Recipient Name</label>
                 <input type="text" id="v-client" class="form-input" required>
@@ -259,9 +255,9 @@
           </form>
         </div>
         
-        <div class="px-6 md:px-8 py-5 bg-white border-t border-slate-100 flex gap-3 md:gap-4 pb-safe">
-          <button id="cancelModalBtn" class="btn-secondary">Cancel</button>
-          <button id="saveDataBtn" class="btn-submit">
+        <div class="px-5 md:px-6 py-4 bg-white border-t border-slate-100 flex gap-3 pb-safe">
+          <button id="cancelModalBtn" class="btn-secondary py-3">Cancel</button>
+          <button id="saveDataBtn" class="btn-submit py-3">
             <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             <span id="saveBtnText">Save Package</span>
           </button>

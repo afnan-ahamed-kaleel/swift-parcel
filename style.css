@@ -41,12 +41,12 @@
   .scanner-panel__header { @apply pt-6 px-6 pb-2; }
   .scanner-panel__content { @apply flex-1 px-6 pb-6 flex flex-col gap-6; }
   .upload-zone { @apply border-2 border-dashed border-slate-300 rounded-3xl p-8 flex flex-col items-center justify-center text-center bg-slate-50 hover:bg-blue-50 hover:border-blue-400 transition-colors cursor-pointer relative overflow-hidden; }
-  .image-preview-container { @apply w-full h-48 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner; }
+  .image-preview-container { @apply w-full h-32 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner; }
 
   /* Forms & Modals */
   .form-group { @apply mb-0; }
-  .form-label { @apply block text-[11px] md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5; }
-  .form-input { @apply w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-bold text-slate-800 shadow-sm transition-all; }
+  .form-label { @apply block text-[11px] md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1; }
+  .form-input { @apply w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-bold text-slate-800 shadow-sm transition-all text-sm; }
   .modal-overlay { @apply fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden items-end sm:items-center justify-center z-[100] opacity-0 transition-opacity duration-300 print:hidden; }
   .modal-content { @apply bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-2xl h-[88vh] sm:h-auto flex flex-col transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300; }
 }
