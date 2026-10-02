@@ -537,23 +537,27 @@ const isDesktop = () => window.innerWidth >= 1024;
 
 // Modal & Desktop Panel Logic
 function openModal() {
+  const verifyForm = document.getElementById('verifyForm');
+  const buttonsContainer = document.getElementById('saveDataBtn').parentElement;
+  
   if (isDesktop() && !editingPackageId) {
-    // If scanning on desktop, move the form into the right panel
-    const verifyForm = document.getElementById('verifyForm');
-    const buttonsContainer = document.getElementById('saveDataBtn').parentElement;
     const desktopContainer = document.getElementById('desktopVerifyFormContainer');
-    
     if(desktopContainer && verifyForm) {
-       // Move form and buttons into the right panel
        desktopContainer.appendChild(verifyForm);
        desktopContainer.appendChild(buttonsContainer);
        
-       // Show analysis results
        document.getElementById('desktopAnalysisResults')?.classList.remove('hidden');
        document.getElementById('desktopAnalysisResults')?.classList.add('flex');
     }
   } else {
-    // Mobile OR Desktop Edit mode (which uses the modal overlay)
+    // Ensure form is inside the modal if it was previously moved
+    const modalContent = document.getElementById('verifyModalContent');
+    const modalBody = modalContent.querySelector('.overflow-y-auto');
+    if (verifyForm && modalBody && verifyForm.parentElement !== modalBody) {
+      modalBody.appendChild(verifyForm);
+      modalContent.appendChild(buttonsContainer);
+    }
+
     verifyModal.classList.remove('hidden');
     verifyModal.classList.add('flex');
     setTimeout(() => {
@@ -564,29 +568,29 @@ function openModal() {
 }
 
 function closeModal() {
-  if (isDesktop() && !editingPackageId && document.getElementById('desktopAnalysisResults')?.classList.contains('flex')) {
-    // Reset desktop panel back to upload zone
+  const verifyForm = document.getElementById('verifyForm');
+  const buttonsContainer = document.getElementById('saveDataBtn').parentElement;
+  const modalContent = document.getElementById('verifyModalContent');
+  const modalBody = modalContent.querySelector('.overflow-y-auto');
+
+  // Reset desktop panel back to upload zone if it was active
+  if (document.getElementById('desktopAnalysisResults')?.classList.contains('flex')) {
     document.getElementById('desktopAnalysisResults')?.classList.add('hidden');
     document.getElementById('desktopAnalysisResults')?.classList.remove('flex');
     document.getElementById('desktopUploadZone')?.classList.remove('hidden');
     document.getElementById('desktopUploadZone')?.classList.add('flex');
-    
-    // Move form back to original modal structure
-    const verifyForm = document.getElementById('verifyForm');
-    const buttonsContainer = document.getElementById('saveDataBtn').parentElement;
-    const modalContent = document.getElementById('verifyModalContent');
-    const modalBody = modalContent.querySelector('.overflow-y-auto');
-    
-    if (verifyForm && modalBody) modalBody.appendChild(verifyForm);
-    if (buttonsContainer && modalContent) modalContent.appendChild(buttonsContainer);
-  } else {
-    verifyModal.classList.add('opacity-0');
-    verifyModalContent.classList.add('translate-y-full', 'sm:scale-95');
-    setTimeout(() => {
-      verifyModal.classList.add('hidden');
-      verifyModal.classList.remove('flex');
-    }, 300);
   }
+  
+  // Always return the form to the modal safely
+  if (verifyForm && modalBody) modalBody.appendChild(verifyForm);
+  if (buttonsContainer && modalContent) modalContent.appendChild(buttonsContainer);
+
+  verifyModal.classList.add('opacity-0');
+  verifyModalContent.classList.add('translate-y-full', 'sm:scale-95');
+  setTimeout(() => {
+    verifyModal.classList.add('hidden');
+    verifyModal.classList.remove('flex');
+  }, 300);
 }
 
 closeModalBtn.addEventListener('click', closeModal);
@@ -654,16 +658,18 @@ function showLoading() {
     document.getElementById('desktopAiLoadingState')?.classList.remove('hidden');
     document.getElementById('desktopAiLoadingState')?.classList.add('flex');
   } else {
-    loadingOverlay.classList.remove('hidden');
-    loadingOverlay.classList.add('flex');
+    if (loadingOverlay) {
+      loadingOverlay.classList.remove('hidden');
+      loadingOverlay.classList.add('flex');
+    }
   }
 }
 
 function hideLoading() {
-  if (isDesktop()) {
-    document.getElementById('desktopAiLoadingState')?.classList.add('hidden');
-    document.getElementById('desktopAiLoadingState')?.classList.remove('flex');
-  } else {
+  document.getElementById('desktopAiLoadingState')?.classList.add('hidden');
+  document.getElementById('desktopAiLoadingState')?.classList.remove('flex');
+  
+  if (loadingOverlay) {
     loadingOverlay.classList.add('hidden');
     loadingOverlay.classList.remove('flex');
   }
