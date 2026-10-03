@@ -305,7 +305,28 @@ window.deletePackage = async (id, event) => {
   });
 };
 
-// --- Live Camera Scanner Logic ---
+// --- Image Downscaling Helper ---
+function downscaleImage(canvas, maxDim = 1280) {
+  let width = canvas.width;
+  let height = canvas.height;
+  
+  if (width > maxDim || height > maxDim) {
+    if (width > height) {
+      height = Math.round((height * maxDim) / width);
+      width = maxDim;
+    } else {
+      width = Math.round((width * maxDim) / height);
+      height = maxDim;
+    }
+  }
+  
+  const scaledCanvas = document.createElement('canvas');
+  scaledCanvas.width = width;
+  scaledCanvas.height = height;
+  const ctx = scaledCanvas.getContext('2d');
+  ctx.drawImage(canvas, 0, 0, width, height);
+  return scaledCanvas;
+}
 
 // Hidden file input fallback just in case camera fails
 const fallbackInput = document.createElement('input');
@@ -314,8 +335,21 @@ fallbackInput.accept = 'image/*';
 fallbackInput.onchange = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  const b64 = await fileToBase64(file);
-  processSnapshot(b64.split(',')[1], file.type);
+  
+  // Downscale image from file input
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    
+    const scaledCanvas = downscaleImage(canvas);
+    const dataUrl = scaledCanvas.toDataURL('image/jpeg', 0.85);
+    processSnapshot(dataUrl.split(',')[1], 'image/jpeg');
+  };
+  img.src = await fileToBase64(file);
 };
 
 async function startCamera() {
@@ -357,7 +391,9 @@ captureBtn.addEventListener('click', () => {
   const ctx = canvas.getContext('2d');
   ctx.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
   
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  // Downscale to prevent massive 4K payloads crashing mobile browsers
+  const scaledCanvas = downscaleImage(canvas);
+  const dataUrl = scaledCanvas.toDataURL('image/jpeg', 0.85);
   const base64Data = dataUrl.split(',')[1];
   
   stopCamera();
@@ -370,13 +406,25 @@ if (desktopFileInput) {
   desktopFileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const b64 = await fileToBase64(file);
     
     // Set preview image in the desktop panel
     const previewImg = document.getElementById('desktopPreviewImg');
     if(previewImg) previewImg.src = URL.createObjectURL(file);
     
-    processSnapshot(b64.split(',')[1], file.type);
+    // Downscale image from file input
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      
+      const scaledCanvas = downscaleImage(canvas);
+      const dataUrl = scaledCanvas.toDataURL('image/jpeg', 0.85);
+      processSnapshot(dataUrl.split(',')[1], 'image/jpeg');
+    };
+    img.src = await fileToBase64(file);
     
     // Reset input so the same file can be selected again if needed
     e.target.value = '';
