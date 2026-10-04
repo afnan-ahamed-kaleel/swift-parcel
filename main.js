@@ -438,16 +438,25 @@ if (desktopScanBtn) {
 }
 mobileScanBtn.addEventListener('click', startCamera);
 
-if (resetBtn) {
+const refreshAppBtn = document.getElementById('refreshAppBtn');
+if (refreshAppBtn) {
   const refreshLottie = document.getElementById('refreshLottie');
   if (refreshLottie) {
-    resetBtn.addEventListener('mouseenter', () => {
+    refreshAppBtn.addEventListener('mouseenter', () => {
       if(typeof refreshLottie.play === 'function') refreshLottie.play();
     });
-    resetBtn.addEventListener('mouseleave', () => {
+    refreshAppBtn.addEventListener('mouseleave', () => {
       if(typeof refreshLottie.stop === 'function') refreshLottie.stop();
     });
   }
+  
+  refreshAppBtn.addEventListener('click', () => {
+    // Hard reload the PWA
+    window.location.reload(true);
+  });
+}
+
+if (resetBtn) {
 
   resetBtn.addEventListener('click', async () => {
     showConfirmModal("Reset Dashboard", "Are you sure you want to completely reset the parcel history? This will clear the dashboard for the next day.", async () => {
