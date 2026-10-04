@@ -20,8 +20,8 @@
 
   /* Buttons */
   .btn-primary { @apply flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-extrabold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-[0_5px_15px_rgba(79,70,229,0.3)] hover:scale-105 active:scale-95 transition-all; }
-  .btn-danger-outline { @apply p-2.5 md:px-4 md:py-2.5 flex items-center justify-center gap-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors active:scale-90; }
-  .btn-icon { @apply p-2.5 text-slate-500 hover:text-blue-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors active:scale-90; }
+  .btn-danger-outline { @apply p-2 md:px-3 md:py-2 flex items-center justify-center gap-1.5 md:gap-2 text-rose-600 bg-transparent hover:bg-rose-50 rounded-xl hover:scale-105 hover:shadow-sm transition-all active:scale-90; }
+  .btn-icon { @apply p-2 text-slate-500 hover:text-blue-600 bg-transparent hover:bg-slate-100 rounded-xl hover:scale-110 hover:shadow-sm transition-all active:scale-90; }
   .btn-secondary { @apply flex-1 py-4 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl font-extrabold transition-colors; }
   .btn-submit { @apply flex-[2] py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-[0_10px_20px_rgba(79,70,229,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] font-extrabold shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all; }
 
