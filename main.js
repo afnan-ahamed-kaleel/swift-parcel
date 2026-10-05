@@ -436,7 +436,36 @@ if (desktopFileInput) {
 if (desktopScanBtn) {
   desktopScanBtn.addEventListener('click', startCamera);
 }
-mobileScanBtn.addEventListener('click', startCamera);
+if (mobileScanBtn) mobileScanBtn.addEventListener('click', startCamera);
+
+// Manual Entry Logic
+function openManualEntry() {
+  editingPackageId = null;
+  // clear form
+  document.getElementById('v-client').value = '';
+  document.getElementById('v-delivery').value = '';
+  document.getElementById('v-phone1').value = '';
+  document.getElementById('v-phone2').value = '';
+  document.getElementById('v-sender').value = '';
+  
+  // hide image preview if any
+  const previewImg = document.getElementById('desktopPreviewImg');
+  if(previewImg) previewImg.src = '';
+  
+  // swap right panel views if desktop
+  const desktopUploadZone = document.getElementById('desktopUploadZone');
+  const desktopAnalysisResults = document.getElementById('desktopAnalysisResults');
+  if (desktopUploadZone) desktopUploadZone.classList.add('hidden');
+  if (desktopAnalysisResults) desktopAnalysisResults.classList.remove('hidden');
+  
+  openModal();
+}
+
+const desktopManualBtn = document.getElementById('desktopManualBtn');
+if (desktopManualBtn) desktopManualBtn.addEventListener('click', openManualEntry);
+
+const mobileManualBtn = document.getElementById('mobileManualBtn');
+if (mobileManualBtn) mobileManualBtn.addEventListener('click', openManualEntry);
 
 const refreshAppBtn = document.getElementById('refreshAppBtn');
 if (refreshAppBtn) {
