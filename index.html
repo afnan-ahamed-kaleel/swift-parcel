@@ -121,24 +121,20 @@
           
           <!-- Upload / Drag & Drop Zone -->
           <div id="desktopUploadZone" class="upload-zone group mt-[45px]">
-            <div class="flex items-center gap-4 mb-4 relative z-30">
-              <div class="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform relative">
+            <div class="flex items-center justify-center gap-4 mb-4 relative z-30">
+              <div class="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center hover:scale-110 transition-transform relative cursor-pointer" title="Upload Image">
                 <input type="file" id="desktopFileInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" title="Upload Image">
                 <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
               </div>
               <button id="desktopOcrBtn" class="w-16 h-16 bg-emerald-600 text-white rounded-xl shadow-md flex items-center justify-center hover:scale-110 transition-transform" title="Offline OCR Scan">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
               </button>
+              <button id="desktopScanBtn" class="w-16 h-16 bg-indigo-600 text-white rounded-xl shadow-md flex items-center justify-center hover:scale-110 transition-transform" title="Use Web Camera">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              </button>
             </div>
-            <h3 class="font-extrabold text-slate-700 text-lg">Upload Label Image</h3>
-            <p class="text-sm text-slate-500 font-medium mt-1 mb-4">Drag and drop or click to browse</p>
-            <div class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest w-full justify-center">
-              <span class="w-8 h-px bg-slate-300"></span> OR <span class="w-8 h-px bg-slate-300"></span>
-            </div>
-            <button id="desktopScanBtn" class="mt-4 px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold shadow-sm group-hover:border-blue-300 group-hover:text-blue-600 transition-colors relative z-30 flex items-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-              Use Web Camera
-            </button>
+            <h3 class="font-extrabold text-slate-700 text-lg">Scan or Upload Label</h3>
+            <p class="text-sm text-slate-500 font-medium mt-1">Choose a method above to extract data</p>
           </div>
 
           <!-- Loading State (Localized to Right Panel) -->
