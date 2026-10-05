@@ -1,17 +1,15 @@
--- ==========================================
 -- SWIFTPARCEL - DATABASE ARCHITECTURE & SCHEMA
 -- ==========================================
 -- This file contains the complete, eternal database architecture for SwiftParcel.
 -- If developers need to understand how the database is structured, or if you need 
 -- to rebuild it from scratch, everything is here.
 
--- ==========================================
+
 -- 1. CACHE CLEAR & SYSTEM STABILITY
 -- ==========================================
 -- Run this if you ever see "Could not find column in schema cache" (PGRST204)
 NOTIFY pgrst, 'reload schema';
 
--- ==========================================
 -- 2. COMPLETE 'packages' TABLE DEFINITION
 -- ==========================================
 -- If the user_id column is missing, you can add it by running:
@@ -33,7 +31,6 @@ CREATE TABLE IF NOT EXISTS public.packages (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- ==========================================
 -- 3. ROW LEVEL SECURITY (RLS) POLICIES
 -- ==========================================
 -- These policies ensure that users can only see and edit THEIR OWN parcels, 
@@ -62,7 +59,6 @@ ON public.packages FOR DELETE
 USING (auth.uid() = user_id);
 
 
--- ==========================================
 -- 4. DEVELOPER DIAGNOSTIC QUERIES
 -- ==========================================
 -- Run these queries in the Supabase SQL Editor to check the database state.

@@ -62,6 +62,7 @@ let currentPackages = [];
 let mediaStream = null;
 let currentFilter = 'All';
 let editingPackageId = null;
+let scanMode = 'gemini'; // 'gemini' or 'ocr'
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 // Custom Toast Alert System
@@ -353,7 +354,7 @@ fallbackInput.onchange = async (e) => {
 };
 
 async function startCamera() {
-  if (!GEMINI_API_KEY) {
+  if (scanMode === 'gemini' && !GEMINI_API_KEY) {
     showToast("CRITICAL: VITE_GEMINI_API_KEY is missing!", "error");
     return;
   }
@@ -397,7 +398,7 @@ captureBtn.addEventListener('click', () => {
   const base64Data = dataUrl.split(',')[1];
   
   stopCamera();
-  processSnapshot(base64Data, 'image/jpeg');
+  processSnapshot(dataUrl, 'image/jpeg');
 });
 
 // Desktop File Input for Scanning
@@ -406,6 +407,11 @@ if (desktopFileInput) {
   desktopFileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
+    if (!desktopFileInput.dataset.triggeredByOcr) {
+      scanMode = 'gemini';
+    }
+    delete desktopFileInput.dataset.triggeredByOcr;
     
     // Set preview image in the desktop panel
     const previewImg = document.getElementById('desktopPreviewImg');
@@ -422,7 +428,7 @@ if (desktopFileInput) {
       
       const scaledCanvas = downscaleImage(canvas);
       const dataUrl = scaledCanvas.toDataURL('image/jpeg', 0.85);
-      processSnapshot(dataUrl.split(',')[1], 'image/jpeg');
+      processSnapshot(dataUrl, 'image/jpeg');
     };
     img.src = await fileToBase64(file);
     
@@ -434,9 +440,23 @@ if (desktopFileInput) {
 // Bind Buttons
 // desktopScanBtn triggers the web camera from the top header
 if (desktopScanBtn) {
-  desktopScanBtn.addEventListener('click', startCamera);
+  desktopScanBtn.addEventListener('click', () => { scanMode = 'gemini'; startCamera(); });
 }
-if (mobileScanBtn) mobileScanBtn.addEventListener('click', startCamera);
+if (mobileScanBtn) mobileScanBtn.addEventListener('click', () => { scanMode = 'gemini'; startCamera(); });
+
+const desktopOcrBtn = document.getElementById('desktopOcrBtn');
+if (desktopOcrBtn) {
+  desktopOcrBtn.addEventListener('click', () => {
+    scanMode = 'ocr';
+    if (desktopFileInput) {
+      desktopFileInput.dataset.triggeredByOcr = 'true';
+      desktopFileInput.click();
+    }
+  });
+}
+
+const mobileOcrBtn = document.getElementById('mobileOcrBtn');
+if (mobileOcrBtn) mobileOcrBtn.addEventListener('click', () => { scanMode = 'ocr'; startCamera(); });
 
 // Manual Entry Logic
 function openManualEntry() {
@@ -461,11 +481,8 @@ function openManualEntry() {
   openModal();
 }
 
-const desktopManualBtn = document.getElementById('desktopManualBtn');
-if (desktopManualBtn) desktopManualBtn.addEventListener('click', openManualEntry);
-
-const mobileManualBtn = document.getElementById('mobileManualBtn');
-if (mobileManualBtn) mobileManualBtn.addEventListener('click', openManualEntry);
+const headerManualBtn = document.getElementById('headerManualBtn');
+if (headerManualBtn) headerManualBtn.addEventListener('click', openManualEntry);
 
 const refreshAppBtn = document.getElementById('refreshAppBtn');
 if (refreshAppBtn) {
@@ -549,11 +566,49 @@ function fileToBase64(file) {
   });
 }
 
-async function processSnapshot(base64Data, mimeType) {
+async function processSnapshot(dataUrl, mimeType) {
   showLoading();
   editingPackageId = null; // Reset edit state when scanning new
   document.getElementById('modalTitle').textContent = 'Verify Extraction';
   document.getElementById('saveBtnText').textContent = 'Save Package';
+  
+  if (scanMode === 'ocr') {
+    document.getElementById('loadingText').textContent = 'Extracting Text Offline...';
+    try {
+      const result = await Tesseract.recognize(dataUrl, 'eng');
+      const text = result.data.text;
+      
+      // Simple Regex to extract phone numbers and use rest as address
+      // Extract Sri Lankan phone numbers: (e.g. 077... or +9477...)
+      const phoneRegex = /(?:\+94|0)[0-9]{9}/g;
+      const phones = text.match(phoneRegex) || [];
+      
+      const primaryPhone = phones[0] || '';
+      const secondaryPhone = phones[1] || '';
+      
+      let remainingText = text.replace(phoneRegex, '').replace(/\n+/g, ', ').trim();
+      
+      const parsedData = {
+        client_name: 'Unknown (Please Verify)',
+        delivery_address: remainingText.substring(0, 150),
+        primary_phone: primaryPhone,
+        secondary_phone: secondaryPhone,
+        sender_address: ''
+      };
+      
+      populateModal(parsedData);
+      hideLoading();
+      openModal();
+    } catch (err) {
+      console.error(err);
+      showToast("Offline OCR Failed", "error");
+      hideLoading();
+    }
+    return;
+  }
+  
+  document.getElementById('loadingText').textContent = 'Analyzing Content...';
+  const base64Data = dataUrl.split(',')[1] || dataUrl;
   
   try {
     const prompt = `
